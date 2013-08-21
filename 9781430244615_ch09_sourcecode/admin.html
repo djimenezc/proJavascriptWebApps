@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CheeseLux Admin</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>    
+    <script src="jquery-ui-1.8.16.custom.js" type="text/javascript"></script>
+    <script src='knockout-2.0.0.js' type='text/javascript'></script>
+    <script src='xdr.js' type='text/javascript'></script>
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.16.custom.css"/>
+    <noscript>
+        <meta http-equiv="refresh" content="0; noscript.html"/>       
+    </noscript>    
+    <script>    
+        function mapProducts(func, data) {
+            $.each(data, function(catIndex, outerItem) {
+                $.each(outerItem.items, function(itemIndex, innerItem) {              
+                    func(innerItem);
+                });
+            });
+        }        
+                                                               
+        function setupDataModel(data) {
+            var newDataModel = {
+                products: ko.observableArray()
+            }
+        
+            mapProducts(function(item) {
+                item.name = ko.observable(item.name);
+                item.price= ko.observable(item.price);
+                newDataModel.products.push(item);
+                newDataModel[item.id] = item;
+            }, data);
+                            
+            return newDataModel;
+        }
+        
+        function mergeData(newData, dataModel) {
+            var newDataMap = {};
+            mapProducts(function(item) {
+                newDataMap[item.id] = item;
+            }, newData);
+            
+            var removalList = [];
+            
+            for (var i = 0; i < dataModel.products().length; i++) {
+                var dmItem = dataModel.products()[i];
+                if (newDataMap[dmItem.id]) {
+                    var newItem = newDataMap[dmItem.id];
+                    dmItem.name(newItem.name);
+                    dmItem.price(newItem.price);
+                } else {                 
+                    removalList.push(dmItem);
+                }                
+            }
+            
+            for (var i = 0; i < removalList.length; i++) {
+                dataModel.products.remove(removalList[i]);
+            }
+        }
+        
+        function modifyProduct(id, method, data, dataModel) {
+            $.ajax({
+                type: "post",
+                headers: {
+                  'X-HTTP-Method-Override': method
+                },                
+                url: "http://cheeselux.com/admin/products/" + id,
+                data: data,
+                success: function(data) {
+                    mergeData(data, dataModel)
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            var dataModel;
+            
+            var req = $.getJSON("http://cheeselux.com/admin/products", function(data) {
+                dataModel = setupDataModel(data);
+            });
+            
+            req.done(function() {                
+                ko.applyBindings(dataModel);
+            
+                $('table.adminTable a')
+                    .button({icons: {primary: "ui-icon-closethick"}, text: false})
+                    .filter("a.put")
+                    .button("option", {icons: {primary: "ui-icon-check"}})
+                    .end()
+                    .click(function(e) {
+                        e.preventDefault();
+                        var elem = $(this);
+                        var prodId = elem.attr("data-id");
+                        var method = elem.hasClass("put") ? "put" : "delete";
+                        var rowElem = elem.closest("tr");
+                        var ajaxData = {
+                            name: rowElem.find("td.pname input").val(),
+                            price: rowElem.find("td.pprice input").val()
+                        };                       
+                        modifyProduct(prodId, method, ajaxData, dataModel);
+                        rowElem.find("input").removeClass("changed");
+                    });
+                    
+                    $('input').change(function() {
+                        console.log("CHNAGE: " + $(this).val());                
+                        $(this).addClass("changed");
+                    })
+            })
+        });        
+    </script>
+</head>
+<body>
+    <div id="logobar">
+        <img src="cheeselux.png">
+        <span id="tagline">Administration</span>
+    </div>
+        
+    <div class="cheesegroup">
+        <div class="grouptitle">Products</div>
+            <div class="groupcontent">
+                <table class="adminTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Name</th>
+                            <th>Price</th><th>Save</th>
+                            <th>Delete</th>
+                        <tr>
+                        <tr><td colspan=5 class="sumline"></td></tr>
+                    </thead>
+                    <tbody data-bind="foreach: products">
+                        <tr>
+                            <td data-bind="text: id"></td>
+                            <td class="pname"><input data-bind="attr: {value: name}"/></td>
+                            <td class="pprice">$<input data-bind="attr: {value: price}"/></td>
+                            <td><a href="#" data-bind="attr: {'data-id': id}" class="put"></a></td>
+                            <td><a href="#" data-bind="attr: {'data-id': id}" class="delete"></a></td>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cornerplaceholder"></div>
+        </div>
+    </div>
+</body>
+</html>

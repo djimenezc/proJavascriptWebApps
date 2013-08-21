@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CheeseLux</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function() {
+            $('#buttonDiv input:submit').hide();
+            $('<a href=#>Submit Order</a>')
+                .appendTo("#buttonDiv")
+                .attr("href", "http://apress.com")
+                .addClass("button").click(function() {
+                    $('form').submit();
+                }).hover(function(e){
+                    var elem = $('#buttonDiv a')
+                    if (e.type == "mouseenter") {
+                        elem.addClass("buttonHover");
+                    } else {
+                        elem.removeClass("buttonHover");        
+                    }
+                })
+        })
+    </script>
+</head>
+<body>
+    <div id="logobar">
+        <img src="cheeselux.png">
+            <span id="tagline">Gourmet European Cheese</span>
+    </div>
+    
+    <form action="/basket" method="post">
+        
+        <div class="cheesegroup">
+            <div class="grouptitle">French Cheese</div>
+            
+            <div class="groupcontent">
+                <label for="camembert" class="cheesename">Camembert ($18)</label>
+                <input name="camembert" value="0"/>
+            </div>
+            
+            <div class="groupcontent">
+                <label for="tomme" class="cheesename">Tomme de Savoie ($19)</label>
+                <input name="tomme" value="0"/>
+            </div>            
+            
+            <div class="groupcontent">
+                <label for="morbier" class="cheesename">Morbier ($9)</label>
+                <input name="morbier" value="0"/>
+            </div>               
+        </div>
+        
+<div id="buttonDiv">
+    <input type="submit" />
+</div>
+    </form>
+</body>
+</html>

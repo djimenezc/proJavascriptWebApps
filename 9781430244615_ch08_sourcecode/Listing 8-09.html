@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CheeseLux</title>
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).bind("mobileinit", function() {
+            $.mobile.autoInitializePage = false;    
+        });
+    </script>
+    <script src="jquery.mobile-1.0.1.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="jquery.mobile-1.0.1.css"/>
+    <link rel="stylesheet" type="text/css" href="styles.mobile.css"/>
+    <script src='knockout-2.0.0.js' type='text/javascript'></script>
+    <script src='utils.js' type='text/javascript'></script>
+    <script src='signals.js' type='text/javascript'></script>
+    <script src='crossroads.js' type='text/javascript'></script>
+    <script src='hasher.js' type='text/javascript'></script>
+    <script src='modernizr-2.0.6.js' type='text/javascript'></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        var cheeseModel = {};
+    
+        detectDeviceFeatures(function(deviceConfig) {
+            cheeseModel.device = deviceConfig;
+            checkForVersionPreference();
+                    
+            $.getJSON("products.json", function(data) {                         
+                cheeseModel.products = data;
+                enhanceViewModel();
+            
+                $(document).ready(function() {
+                    ko.applyBindings(cheeseModel);
+                    $('*.deferred').each(function(index, elem) {
+                        ko.applyBindings(cheeseModel, elem);        
+                    });
+                    $('button#left, button#right').live("click", function(e) {
+                        e.preventDefault();    
+                        advanceCategory(e, e.target.id);
+                    })
+                    $.mobile.initializePage();
+                });            
+            });
+            
+            $(document).bind("pageinit", function() {
+                function positionCategoryButtons() {
+                    setTimeout(function() {
+                        $('fieldset:visible').each(function(index, elem) {
+                            var fsWidth = 0;    
+                            $(elem).children().each(function(index, child) {
+                                fsWidth+= $(child).width();
+                            });
+                            if (fsWidth > 0) {
+                                $(elem).width(fsWidth);
+                            } else {                             
+                                positionCategoryButtons();
+                            }
+                        });
+                    }, 10);
+                };
+                positionCategoryButtons();
+                cheeseModel.device.smallAndPortrait.subscribe(positionCategoryButtons);
+            });
+        });    
+    </script>
+    <script id="buttonsTemplate" type="text/html">
+        <div class="deferred middle" data-role="controlgroup" data-type="horizontal"
+            data-bind="attr: {'data-bind': 'visible: ' + ($data ? '' : '!')
+                + 'device.smallAndLandscape()' }">
+            <!-- ko if: $data -->
+            <button id="left" data-icon="arrow-l">&nbsp;</button>
+            <!-- /ko -->
+            <input type="submit" value="Submit Order"/>
+            <!-- ko if: $data -->
+            <button id="right" data-icon="arrow-r" data-iconpos="right">&nbsp;</button>
+            <!-- /ko -->
+        </div>    
+    </script>    
+</head>
+<body>
+    <div id="page1" data-role="page" data-theme="a">
+        <div id="logobar" data-bind="visible: device.largeScreen()">
+            <img data-bind="ifAttr: {attr: 'src', value: 'cheeselux.png',
+                test: device.largeScreen()}">
+            <span id="tagline">Gourmet European Cheese</span>
+        </div>
+        
+        <fieldset class="middle" data-role="controlgroup" data-type="horizontal"
+            data-bind="foreach:products, visible: device.largeScreen() ||
+                device.smallAndPortrait()">
+            <input type="radio" name="category" data-bind="attr: {id: category,
+                value: category}, checked: $root.selectedCategory" />
+            <label data-bind="attr: {for: category}">
+                <span data-bind="text: $root.device.smallAndPortrait()?
+                    shortName : category"></span>
+            </label>
+        </fieldset>
+                
+        <form action="/basket" method="post">
+            <div data-bind="foreach: products">
+                <div data-bind="fadeVisible: category == $root.selectedCategory()">
+                    <div data-role="header" >
+                        <h1 data-bind="text: category"></h1>
+                    </div>
+                    <!-- ko foreach: items -->
+                    <div class="itemContainer ui-grid-a">
+                        <div class="ui-block-a">
+                            <label data-bind="attr: {for: id}, formatText: {value: name,
+                                suffix:':'}"></label>
+                        </div>
+                        <div class="ui-block-b">
+                            <input data-bind="attr: {name: id}, value: quantity">
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <div data-role="footer">
+                         <h1>
+                             <label>Total:</label>
+                             <span data-bind="formatText: {prefix: '$',
+                                value: cheeseModel.total()}"
+                         </h1>
+                     </div>
+                </div>
+            </div>
+                
+            <!-- ko template: {name: 'buttonsTemplate', foreach: [true, false] } -->
+            <!-- /ko -->
+        </form>            
+    </div>
+</body>
+</html>

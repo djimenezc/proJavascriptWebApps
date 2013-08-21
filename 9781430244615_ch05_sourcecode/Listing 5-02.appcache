@@ -1,0 +1,34 @@
+CACHE MANIFEST
+  
+# HTML document
+example.html
+ 
+# script files
+jquery-1.7.1.js
+jquery-ui-1.8.16.custom.js
+knockout-2.0.0.js
+signals.js
+crossroads.js
+hasher.js
+utils.js
+
+# CSS files 
+styles.css
+jquery-ui-1.8.16.custom.css
+
+# images
+blackwave.png
+cheeselux.png
+images/ui-bg_flat_75_eb8f00_40x100.png
+images/ui-bg_flat_75_fbbe03_40x100.png
+images/ui-icons_ffffff_256x240.png
+images/ui-bg_flat_75_595959_40x100.png
+images/ui-bg_flat_65_fbbe03_40x100.png
+
+# fonts
+fonts/YanoneKaffeesatz-Regular.ttf
+fonts/fanwood_italic-webfont.ttf
+fonts/ostrich-rounded-webfont.woff
+
+NETWORK:
+products.json

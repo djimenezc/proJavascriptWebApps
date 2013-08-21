@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Storage Example</title>
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.16.custom.css"/>
+    <link rel="stylesheet" type="text/css" href="styles.css"/> 
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>    
+    <script src="jquery-ui-1.8.16.custom.js" type="text/javascript"></script>
+    <script src='knockout-2.0.0.js' type='text/javascript'></script>
+    <script src='utils.js' type='text/javascript'></script>
+    <script src='signals.js' type='text/javascript'></script>
+    <script src='crossroads.js' type='text/javascript'></script>
+    <script src='hasher.js' type='text/javascript'></script>  
+
+    <script>
+        var viewModel = {
+            selectedItem: ko.observable()
+        };
+    
+        function loadViewModelData() {
+            var storedData = localStorage["viewModelData"];
+            if (storedData) {
+                var storedDataObject = JSON.parse(storedData);
+                viewModel.items = storedDataObject.items;
+                viewModel.selectedItem(storedDataObject.selectedItem);
+            } else {
+                viewModel.items = ["Apple", "Orange", "Banana"];
+                viewModel.selectedItem("Apple");               
+            }
+        }
+        
+        function storeViewModelData() {
+            var viewModelData = {
+                items: viewModel.items,
+                selectedItem: viewModel.selectedItem()
+            };
+            localStorage["viewModelData"] = JSON.stringify(viewModelData);
+        }
+    
+        $(document).ready(function() {
+            loadViewModelData();
+            
+            ko.applyBindings(viewModel);
+                        
+            $('div.catSelectors').buttonset();
+    
+             hasher.initialized.add(crossroads.parse, crossroads); 
+             hasher.changed.add(crossroads.parse, crossroads); 
+             hasher.init();    
+    
+            crossroads.addRoute("select/{item}", function(item) {
+                viewModel.selectedItem(item);
+                storeViewModelData();
+            });
+        });  
+    </script>
+
+</head>
+<body>
+    <div class="catSelectors" data-bind="foreach: items">
+        <a data-bind="formatAttr: {attr: 'href', prefix: '#select/', value: $data},
+            css: {selectedItem: ($data == viewModel.selectedItem())}">
+            <span data-bind="text: $data"></span>
+        </a>
+    </div>
+    <div data-bind="foreach: items">
+        <div class="item" data-bind="fadeVisible: $data == viewModel.selectedItem()">
+            The selected item is: <span data-bind="text: $data"></span>
+        </div>  
+    </div>
+</body>
+</html>

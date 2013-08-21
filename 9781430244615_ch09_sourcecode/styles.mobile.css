@@ -1,0 +1,81 @@
+@font-face {
+    font-family: 'Ostrich';
+    font-style: normal;
+    font-weight: normal;
+    src: url('fonts/ostrich-rounded-webfont.woff');
+}        
+
+@font-face {
+    font-family: 'Fanwood';
+    font-style: normal;
+    font-weight: normal;
+    src: url('fonts/fanwood_italic-webfont.ttf');
+}          
+
+fieldset.middle, div.middle, *.middle > * {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;            
+}
+
+div.itemContainer {
+    text-align: right;
+    margin-top: 2px;
+}
+
+div[data-role='footer'] {
+    margin-top: 2px;
+}
+        
+div.itemContainer div.ui-block-a{
+    padding-top: 10px;
+    padding-right: 10px;
+    width: 45%;
+}
+
+label.ptop {
+    padding-top: 10px;
+    padding-right: 10px;
+    font-family: Helvtica, Ariel, sans-serif;
+}
+
+div.itemContainer input {
+    max-width:  9em;
+}
+                     
+#logobar {
+    padding: 10px;
+    padding-left: 20px;
+    margin: 0px;
+    margin-bottom: 10px;
+}
+
+#logobar img {
+    height: 50px
+}
+
+#tagline {
+    font-family: Ostrich, sans-serif;
+    font-size: 30px;
+    vertical-align: top;
+    padding-right: 25px;
+}
+
+img.logo {
+    display: block;
+    margin: 20px auto;
+}
+
+span.para {
+    font-family: Fanwood, sans-serif;
+    display: block;
+    margin: 20px 20px;
+    font-size: 25px;
+    text-align: center;
+}
+
+div.results {
+    font-family: Fanwood, sans-serif;
+    font-size: 30px;
+    font-weight: bold;
+}

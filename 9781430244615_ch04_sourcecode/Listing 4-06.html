@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Routing Example</title>
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.16.custom.css"/>
+    <link rel="stylesheet" type="text/css" href="styles.css"/> 
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>    
+    <script src="jquery-ui-1.8.16.custom.js" type="text/javascript"></script>
+    <script src='knockout-2.0.0.js' type='text/javascript'></script>
+    <script src='utils.js' type='text/javascript'></script>
+    <script src='signals.js' type='text/javascript'></script>
+    <script src='crossroads.js' type='text/javascript'></script>
+    <script src='hasher.js' type='text/javascript'></script>
+
+    <script>
+        var viewModel = {
+            items: ko.observableArray(["Apple", "Orange", "Banana"]),
+            selectedItem: ko.observable("Apple")
+        };
+    
+        $(document).ready(function() {
+            ko.applyBindings(viewModel);
+                        
+            $('div.catSelectors').buttonset();
+    
+            hasher.initialized.add(crossroads.parse, crossroads); 
+            hasher.changed.add(crossroads.parse, crossroads); 
+            hasher.init();    
+    
+            crossroads.addRoute("select/{item}", function(item) {
+                if (viewModel.items.indexOf(item)== -1) {
+                    viewModel.items.push(item);
+                    $('div.catSelectors').buttonset();
+                }
+                viewModel.selectedItem(item);
+            });
+        });  
+    </script>
+
+</head>
+<body>
+    <div class="catSelectors" data-bind="foreach: items">
+        <a data-bind="formatAttr: {attr: 'href', prefix: '#select/', value: $data},
+            css: {selectedItem: ($data == viewModel.selectedItem())}">
+            <span data-bind="text: $data"></span>
+        </a>
+    </div>
+    <div data-bind="foreach: items">
+        <div class="item" data-bind="fadeVisible: $data == viewModel.selectedItem()">
+            The selected item is: <span data-bind="text: $data"></span>
+        </div>  
+    </div>
+</body>
+</html>

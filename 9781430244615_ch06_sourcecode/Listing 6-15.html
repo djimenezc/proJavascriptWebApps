@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CheeseLux Cheese Finder</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>    
+    <script src="jquery-ui-1.8.16.custom.js" type="text/javascript"></script>
+    <script src='knockout-2.0.0.js' type='text/javascript'></script>
+    <script src='utils.js' type='text/javascript'></script>
+    <script src='signals.js' type='text/javascript'></script>
+    <script src='hasher.js' type='text/javascript'></script>    
+    <script src='crossroads.js' type='text/javascript'></script>    
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.16.custom.css"/>
+    <noscript>
+        <meta http-equiv="refresh" content="0; noscript.html"/>       
+    </noscript>    
+    <script>
+    
+        var viewModel = {
+            searchModes: ["ID", "Description", "Category"],
+            selectedMode: ko.observable("ID"),
+            selectedItems: ko.observableArray()
+        };
+        
+        function handleSearchResults(resultData) {
+            if (resultData) {
+                viewModel.selectedItems.removeAll();
+                if ($.isArray(resultData)) {
+                    for (var i = 0; i < resultData.length; i++) {
+                        viewModel.selectedItems.push(resultData[i]);
+                    }
+                } else {
+                    viewModel.selectedItems.push(resultData);
+                }
+            }
+        }
+    
+        $.getJSON("products.json", function(data) {
+            setupDatabase(data, function() {
+                $(document).ready(function() {
+                    
+                    hasher.initialized.add(crossroads.parse, crossroads); 
+                    hasher.changed.add(crossroads.parse, crossroads); 
+                    hasher.init();    
+           
+                    crossroads.addRoute("mode/:mode:", function(mode) {                
+                        viewModel.selectedMode(mode || viewModel.searchModes[0]);
+                        viewModel.selectedItems.removeAll();
+                        $('#textsearch').val("");
+                    });             
+                    crossroads.parse(location.hash.slice(1));
+                    
+                    ko.applyBindings(viewModel);
+                    $('div.navSelectors').buttonset();
+                    $('div.groupcontent a').button().click(function() {                
+                        var sText = $('#textsearch').val();                            
+                        switch (viewModel.selectedMode()) {
+                            case "ID":
+                                getProductByID(sText, handleSearchResults)
+                                break;
+                            case "Description":
+                                getProductsByDescription(sText, handleSearchResults);
+                                break;
+                            case "Category":
+                                getProductsByCategory(sText, handleSearchResults);
+                                break;
+                        };
+                    });
+                });
+            });    
+        });
+    </script>
+</head>
+<body>
+    <div id="logobar">
+        <img src="cheeselux.png">
+        <div class="tagcontainer">
+            <span id="tagline">Cheese Finder</span>
+        </div>
+    </div>
+                            
+    <div class="cheesegroup">
+        <div class="navSelectors" data-bind="foreach: searchModes">
+            <a data-bind="formatAttr: {attr: 'href', prefix: '#mode/', value: $data},
+                css: {selectedItem: $data == $root.selectedMode()}">
+                <span data-bind="text: $data">
+            </a>
+        </div>
+    </div>
+    
+    <div class="cheesegroup">
+        <div class="grouptitle">Search Criteria</div>
+        <div class="groupcontent centered">
+            <label class="cheesename">Search Text:</label>
+            <input id="textsearch" class="stwin"/>
+            <a id="textsearch" class="smallbutton">Search</a>            
+        </div>
+    </div>
+    
+    <div class="cheesegroup">
+        <div class="grouptitle">Search Results</div>
+        <div class="groupcontent centered">
+            <table id="resultTable" data-bind="visible: selectedItems().length > 0">
+                <thead>
+                    <tr><th>Name</th><th>Price</th><th>Description</th></tr>
+                    <tr><td colspan=3 class="sumline"></td></tr>
+                </thead>                
+                <tbody>
+                    <!-- ko foreach: viewModel.selectedItems() -->
+                    <tr>
+                        <td data-bind="text: name"></td>
+                        <td data-bind="text: price"></td>
+                        <td data-bind="text: description"></td>
+                    </tr>
+                    <tr><td colspan=3 class="sumline"></td></tr>
+                    <!-- /ko -->
+                </tbody>
+            </table>
+            <div data-bind="visible: selectedItems().length == 0">
+                No matches
+            </div>
+        </div>
+    </div>        
+</body>
+</html>

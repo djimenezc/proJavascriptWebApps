@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CheeseLux</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <script src="jquery-1.7.1.js" type="text/javascript"></script>    
+    <script src="jquery-ui-1.8.16.custom.js" type="text/javascript"></script>
+    <script src='knockout-2.0.0.js' type='text/javascript'></script>
+    <script src='utils.js' type='text/javascript'></script>
+    <script src='signals.js' type='text/javascript'></script>
+    <script src='crossroads.js' type='text/javascript'></script>
+    <script src='hasher.js' type='text/javascript'></script>
+    <script src='modernizr-2.0.6.js' type='text/javascript'></script>
+    <script src='jquery.touchSwipe-1.2.5.js' type='text/javascript'></script>
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.16.custom.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        var cheeseModel = {};
+    
+        detectDeviceFeatures(function(deviceConfig) {
+            cheeseModel.device = deviceConfig;
+            $.getJSON("products.json", function(data) {
+                cheeseModel.products = data;
+            }).success(function() {
+                $(document).ready(function() {
+                                        
+                function performScreenSetup(smallScreen) {    
+                    $('div.cheesegroup').not("#basket")
+                        .css("width", smallScreen ? "" : "50%");
+                    $('button#left').button({icons:
+                        {primary: "ui-icon-circle-triangle-w"},text: false});
+                    $('button#right').button({icons:
+                        {primary: "ui-icon-circle-triangle-e"},text: false});
+                    $('button#left, button#right').click(function(e) {
+                        e.preventDefault();
+                        advanceCategory(this.id);    
+                    });
+                };                
+                    cheeseModel.device.smallScreen.subscribe(performScreenSetup);
+                    performScreenSetup(cheeseModel.device.smallScreen());
+                    
+                    $('div.buttonDiv input:submit').button();
+                    
+                    $('div.navSelectors').buttonset();                                           
+                                   
+                    enhanceViewModel();
+                    ko.applyBindings(cheeseModel);
+                    
+                    hasher.initialized.add(crossroads.parse, crossroads); 
+                    hasher.changed.add(crossroads.parse, crossroads); 
+                    hasher.init();    
+    
+                    crossroads.addRoute("category/:newCat:", function(newCat) {                
+                        cheeseModel.selectedCategory(newCat ?
+                            newCat : cheeseModel.products[0].category);
+                    });
+                    crossroads.parse(location.hash.slice(1));
+                });            
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="logobar" data-bind="visible: device.largeScreen()">
+        <img data-bind="ifAttr: {attr: 'src', value: 'cheeselux.png',
+                                            test: device.largeScreen()}">
+        <span id="tagline">Gourmet European Cheese</span>
+    </div>
+                
+    <div class="cheesegroup"
+         data-bind="ifnot: cheeseModel.device.smallScreen() &&
+            cheeseModel.device.landscape()">
+        <div class="navSelectors" data-bind="foreach: products">
+            <a data-bind="formatAttr: {attr: 'href', prefix: '#category/',
+               value: category},
+            css: {selectedItem: (category == cheeseModel.selectedCategory())}">
+                <span data-bind="text: cheeseModel.device.smallScreen()?
+                    shortName : category"></span>
+            </a>
+        </div>
+    </div>                
+                    
+    <form action="/shipping" method="post">
+        <div data-bind="foreach: products">
+            <div class="cheesegroup"
+                 data-bind="fadeVisible: category == $root.selectedCategory()">
+                <div class="grouptitle" data-bind="text: category"></div>
+                <!-- ko foreach: items -->
+                <div class="groupcontent">
+                    <label data-bind="attr: {for: id}" class="cheesename">
+                        <span data-bind="text: name">
+                        </span> $(<span data-bind="text:price"></span>)</label>
+                    <input data-bind="attr: {name: id}, value: quantity"/>
+                    <span data-bind="visible: subtotal" class="subtotal">
+                        ($<span data-bind="text: subtotal"></span>)
+                    </span>
+                </div>
+                <!-- /ko -->
+                <div class="groupcontent">
+                    <label class="cheesename">Total:</label>
+                    <span class="subtotal" id="total">
+                        $<span data-bind="text: cheeseModel.total()"></span>
+                    </span>                    
+                </div>    
+            </div>
+        </div>
+        <div class="buttonDiv" data-bind="visible: $root.device.smallScreen()">
+            <button data-bind="visible: $root.device.landscape()" id="left">Previous</button>
+            <input type="submit" value="Submit Order"/>
+            <button data-bind="visible: $root.device.landscape()" id="right">Next</button>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="qunit.css"/>
+    <script src='require.js' type='text/javascript'></script>
+    <script src='jquery-1.7.1.js' type='text/javascript'></script>
+    <script src='qunit.js' type='text/javascript'></script>
+    <script type="text/javascript">    
+        $(document).ready(function() {
+            require(["utils-amd"], function(utils) {
+                module("Utils-AMD Module");
+                // tests for utils-amd module will go here
+            });
+        });
+    </script>    
+</head>
+<body>
+    <h1 id="qunit-header">AMD Tests</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+    <div id="qunit-fixture">test markup, will be hidden</div>    
+</body>
+</html>
